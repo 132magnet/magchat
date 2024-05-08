@@ -3,30 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mag Chat</title>
-<style>
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0; /* Grey background */
-  }
-  
-  .centered-text {
-    color: white; /* White text */
-    font-size: 24px;
-    text-align: center;
-    padding: 20px;
-    background-color: #666; /* Grey background */
-    border-radius: 10px;
-  }
-</style>
+<title>Chat System</title>
 </head>
 <body>
-  <div class="centered-text">
-    Ja moin. pommes.
-  </div>
+<script>
+// Get the hash from the URL
+const hash = window.location.hash.substring(1);
+
+// Check if hash exists
+if (!hash) {
+    // If hash doesn't exist, prompt user to enter a code
+    const code = prompt("Enter a code:");
+    if (code) {
+        // Redirect to the same page with the hash
+        window.location.href = "#" + code;
+    }
+} else {
+    // Hash exists, proceed with chat room
+    const filename = hash + ".txt";
+
+    // Function to create or load text file
+    function createOrLoadFile(filename) {
+        // Check if file exists
+        fetch(filename)
+            .then(response => {
+                if (!response.ok) {
+                    // File doesn't exist, create it
+                    return fetch(filename, { method: "PUT" });
+                }
+                // File exists, return it
+                return response.text();
+            })
+            .then(text => {
+                // Display the contents of the file
+                displayMessages(text);
+            })
+            .catch(error => console.error("Error:", error));
+    }
+
+    // Function to display messages
+    function displayMessages(messages) {
+        // Display messages in the chat window
+        document.getElementById("chat").innerText = messages;
+    }
+
+    // Function to send message
+    function sendMessage(message) {
+        // Append message to the file
+        fetch(filename, {
+            method: "POST",
+            body: message
+        })
+        .catch(error => console.error("Error:", error));
+    }
+
+    // Load or create file
+    createOrLoadFile(filename);
+
+    // Event listener for sending messages
+    document.getElementById("messageInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            const username = "YourUsername"; // Set your username here
+            const message = `${username}: ${event.target.value}\n`;
+            sendMessage(message);
+            event.target.value = "";
+        }
+    });
+}
+</script>
+
+<div id="chat"></div>
+<input type="text" id="messageInput" placeholder="Type your message...">
 </body>
 </html>
